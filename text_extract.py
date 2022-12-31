@@ -1,12 +1,13 @@
 from collections.abc import Sequence
 import json
+from os.path import join, dirname
 
 from PIL import Image
 
 from screen_capture import Capturer
 
 
-with open("characters.json", encoding="utf8") as f:
+with open(join(dirname(__file__), "characters.json"), encoding="utf8") as f:
     characters: dict[str, list[list[int]]] = json.load(f)
 
 
