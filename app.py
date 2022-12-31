@@ -169,7 +169,7 @@ class App:
     def calculate_scale(self):
         screen_size = max(self.display.get_size())
         if not self.stronghold_data.data:
-            return screen_size / 4000
+            return screen_size / 4096
         delta = max(
             abs(self.position[0] - self.stronghold_data.data[0]["pos"][0]),
             abs(self.position[1] - self.stronghold_data.data[0]["pos"][1]),
