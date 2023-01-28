@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import re
 from typing import Literal
+import pyperclip
 
 from text_extract import TextExtractor
 
 
 class DataExtractor(TextExtractor):
+    use_clipboard = True
+
     def __init__(self):
         super().__init__()
         self.position = 0, 0, 0
@@ -16,6 +19,23 @@ class DataExtractor(TextExtractor):
         ] = "overworld"
 
     def capture(self):
+        if self.use_clipboard:
+            text = pyperclip.paste()
+            data = re.match(
+                r"^\/execute in minecraft:(overworld|the_nether|the_end) run tp @s (-?\d+\.\d\d) (-?\d+\.\d\d) (-?\d+\.\d\d) (-?\d+\.\d\d) (-?\d+\.\d\d$)",
+                text,
+            )
+            if not data:
+                return
+            data = data.groups()
+            dimension: Literal["overworld", "the_nether", "the_end"] = data[
+                0
+            ]  # type: ignore
+            self.dimension = dimension
+            self.position = (float(data[1]), float(data[2]), float(data[3]))
+            self.angle = (float(data[4]), float(data[5]))
+            return
+
         super().capture()
         self.position = self._get_position() or self.position
         self.angle = self._get_angle() or self.angle
@@ -31,10 +51,11 @@ class DataExtractor(TextExtractor):
         )
         if not coordinates:
             return None
+        coordinates = coordinates.groups()
         return (
+            float(coordinates[0]),
             float(coordinates[1]),
             float(coordinates[2]),
-            float(coordinates[3]),
         )
 
     def _get_angle_text(self):
@@ -52,7 +73,8 @@ class DataExtractor(TextExtractor):
         angles = re.match(r"(-?\d+\.\d+) \/ (-?\d+\.\d+)", text)
         if not angles:
             return None
-        return float(angles[1]), float(angles[2])
+        angles = angles.groups()
+        return (float(angles[0]), float(angles[1]))
 
     def _get_dimension(self):
         text = self._get_text(9, 49)
